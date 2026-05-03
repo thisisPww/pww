@@ -1,0 +1,29 @@
+name: Download File to Repo
+
+on:
+  workflow_dispatch:
+    inputs:
+      file_url:
+        description: "URL of file to download"
+        required: true
+        type: string
+
+jobs:
+  download:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout repo
+        uses: actions/checkout@v3
+
+      - name: Download file
+        run: |
+          curl -L "${{ github.event.inputs.file_url }}" -o downloaded_file
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          mv downloaded_file file_from_url
+          git add .
+          git commit -m "Downloaded file from URL"
+          git push
