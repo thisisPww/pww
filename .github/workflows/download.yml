@@ -8,16 +8,20 @@ on:
         required: true
         type: string
 
+permissions:
+  contents: write
+  
 jobs:
   download:
     runs-on: ubuntu-latest
     steps:
       - name: checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Download file
         run: |
-          curl -L "${{ github.event.inputs.file_url }}" -o downloaded_file
+          sudo apt-get update
+          sudo apt-get install -y p7zip-full file
 
       - name: Commit and push
         run: |
