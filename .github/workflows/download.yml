@@ -7,27 +7,35 @@ on:
         description: "URL of file to download"
         required: true
         type: string
+      output_filename: # اضافه کردن این بخش اختیاری است برای تعیین نام فایل خروجی
+        description: "Desired filename for the downloaded file (optional)"
+        required: false
+        type: string
+        default: "downloaded_file"
 
-permissions:
-  contents: write
-  
 jobs:
   download:
     runs-on: ubuntu-latest
     steps:
       - name: checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4 # <<<--- آپدیت شده به v4
 
       - name: Download file
         run: |
-          sudo apt-get update
-          sudo apt-get install -y p7zip-full file
+          # استفاده از wget که معمولا پایدارتر است
+          # -O: نام فایل خروجی را مشخص می‌کند
+          # --no-check-certificate: اگر با خطای SSL مواجه شدی، این گزینه را اضافه کن (احتیاط!)
+          # -L: دنبال کردن ریدایرکت‌ها
+          wget -L "${{ github.event.inputs.file_url }}" -O "${{ github.event.inputs.output_filename }}"
+
+          # اگر wget کار نکرد، این دستور curl را امتحان کن:
+          # curl -L "${{ github.event.inputs.file_url }}" -o "${{ github.event.inputs.output_filename }}"
+
 
       - name: Commit and push
         run: |
-          git config user.name "github-actions"
-          git config user.email "actions@github.com"
-          mv downloaded_file file_from_url
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
           git add .
-          git commit -m "Downloaded file from URL"
+          git commit -m "Downloaded file from URL: ${{ github.event.inputs.file_url }}" || echo "No changes to commit"
           git push
